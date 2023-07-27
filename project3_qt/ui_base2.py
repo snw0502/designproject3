@@ -86,8 +86,6 @@ class AlgorithmVisualizer(QMainWindow):
         self.scene.set_cell_color(start,end,QColor(255, 0, 0))
 
 
-
-
 class GridCell(QGraphicsRectItem):
     def __init__(self, x, y, size):
         super().__init__(x, y, size, size)
