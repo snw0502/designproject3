@@ -74,11 +74,13 @@ class AlgorithmVisualizer(QMainWindow):
             self.runner = AlgorithmRunner(maze1)
             QThreadPool.globalInstance().start(self.runner)
             self.runner.signals.update_sig.connect(self.get_bfs_sig)
+            self.runner.signals.exit_sig.connect(self.get_exit_sig)
 
     def stop_thread(self):
         if self.runner:
             self.runner.stop()
             self.runner.signals.update_sig.disconnect(self.get_bfs_sig)
+            self.runner.signals.exit_sig.disconnect(self.get_exit_sig)
             self.runner = None
 
     def create_graphic_view(self):
@@ -95,6 +97,9 @@ class AlgorithmVisualizer(QMainWindow):
 
     def get_bfs_sig(self, start: int, end: int):
         self.scene.set_cell_color(start,end,QColor(158, 29, 68))
+
+    def get_exit_sig(self, start: int, end: int):
+        self.scene.set_cell_color(start,end, QColor(30,235,71))
 
     def import_file(self):
         image_path, _ = QFileDialog.getOpenFileName(self, 'Open PNG File', '', 'PNG Files (*.png)')

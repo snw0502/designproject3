@@ -10,6 +10,7 @@ from collections import deque
 # just do bfs for now
 class AlgorithmSignals(QObject):
     update_sig = Signal(int, int)  #index to update
+    exit_sig = Signal(int, int)
 
 class AlgorithmRunner(QRunnable):
     def __init__(self, grid):
@@ -37,7 +38,12 @@ class AlgorithmRunner(QRunnable):
         my_queue = deque()
         explored = [[False for _ in range(self.cols)] for _ in range(self.rows)]
 
-        s = [7,1]
+
+        #find start state
+        for i in range(self.rows):
+            if self.grid[i][0] == 8:
+                s = [i,0]
+
 
         my_queue.append(s)
 
@@ -53,12 +59,12 @@ class AlgorithmRunner(QRunnable):
 
                 next_states = []
 
-                if (s[0] != 0 and s[1] != 0):
-                    next_states = self.find_next_states(s)
+                next_states = self.find_next_states(s)
                 
                 for i in range(len(next_states)):
                     if (self.grid[next_states[i][0]][next_states[i][1]] != 2 and explored[next_states[i][0]][next_states[i][1]] != True):
                         if (next_states[i][0] == 0 or next_states[i][1] == 0 or next_states[i][0] == len(self.grid)-1 or next_states[i][1] == len(self.grid[0])-1):
+                            self.signals.exit_sig.emit(next_states[i][0],next_states[i][1])
                             return next_states[i]
                         else:
                             print(f"explored element: {next_states[i]}")
