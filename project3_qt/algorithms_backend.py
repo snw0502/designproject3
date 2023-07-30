@@ -9,7 +9,7 @@ from collections import deque
 
 # just do bfs for now
 class AlgorithmSignals(QObject):
-    update_sig = Signal(int, int)  # index to update
+    update_sig = Signal(int, int)  #index to update
 
 class AlgorithmRunner(QRunnable):
     def __init__(self, grid):
@@ -65,16 +65,7 @@ class AlgorithmRunner(QRunnable):
                             self.signals.update_sig.emit(next_states[i][0],next_states[i][1])
                             my_queue.append(next_states[i])
                             explored[next_states[i][0]][next_states[i][1]] = True
-            time.sleep(0.05)
-    '''
-    @Slot()
-    def run(self):
-        while not self.stop_flag:
-            x1, y1 = random.randint(0, 16), random.randint(0, 32)
-
-            self.signals.update_sig.emit(x1, y1)
-            time.sleep(1)
-    '''
+            time.sleep(0.005)
 
 class AlgorithmHandler():
     def __init__(self, algorithm: str, grid: list[list]):
