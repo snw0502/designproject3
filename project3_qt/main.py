@@ -1,4 +1,4 @@
-from ui_base2 import *
+from ui_base import *
 import sys
 
 def main():

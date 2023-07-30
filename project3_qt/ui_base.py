@@ -17,6 +17,10 @@ class AlgorithmVisualizer(QMainWindow):
         #draw task
         self.runner = None
 
+        #self.timer = QTimer()
+        #self.timer.startTimer(1,)
+        #self.timer.timeout.connect(self.update_timer)
+
         #MAIN LAYOUTS
         self.page_layout = QHBoxLayout()
         self.button_layout = QVBoxLayout()
@@ -41,6 +45,7 @@ class AlgorithmVisualizer(QMainWindow):
         self.btn_a_star = QPushButton("A Star Search")
         self.btn_quick_sort = QPushButton("Quick Sort")
         self.btn_select_sort = QPushButton("Selection Sort")
+        self.btn_reset_maze = QPushButton("Reset Maze")
 
         self.button_layout.addWidget(self.btn_breadth_first)
         self.button_layout.addWidget(self.btn_a_star)
@@ -49,6 +54,7 @@ class AlgorithmVisualizer(QMainWindow):
 
         self.btn_stop = QPushButton("Stop drawing")
         self.button_layout.addWidget(self.btn_stop)
+        self.button_layout.addWidget(self.btn_reset_maze)
 
 
         #Grid and stuff
@@ -58,30 +64,47 @@ class AlgorithmVisualizer(QMainWindow):
 
         self.create_graphic_view()
 
-        self.btn_breadth_first.clicked.connect(self.start_thread)
+        self.btn_breadth_first.clicked.connect(self.start_bfs)
+        self.btn_a_star.clicked.connect(self.start_astar)
         self.btn_import.clicked.connect(self.import_file)
         self.btn_set_maze.clicked.connect(self.set_maze)
 
         self.btn_stop.clicked.connect(self.stop_thread)
+        self.btn_reset_maze.clicked.connect(self.set_maze)
 
-        self.main_widget = Color('light blue')
+        self.main_widget = Color('purple')
         self.main_widget.setLayout(self.page_layout)
         self.setCentralWidget(self.main_widget)
 
-    def start_thread(self):
+    def start_bfs(self):
         maze1 = self.scene.bfs_arr
         if not self.runner:
-            self.runner = AlgorithmRunner(maze1)
+            self.runner = BreadthFirstRunner(maze1)
             QThreadPool.globalInstance().start(self.runner)
+            self.runner.signals.start_sig.connect(self.get_bfs_start_sig)
             self.runner.signals.update_sig.connect(self.get_bfs_sig)
-            self.runner.signals.exit_sig.connect(self.get_exit_sig)
+            self.runner.signals.exit_sig.connect(self.get_bfs_exit_sig)
 
     def stop_thread(self):
         if self.runner:
             self.runner.stop()
-            self.runner.signals.update_sig.disconnect(self.get_bfs_sig)
-            self.runner.signals.exit_sig.disconnect(self.get_exit_sig)
+            if type(self.runner) == BreadthFirstRunner:
+                self.runner.signals.start_sig.disconnect(self.get_bfs_start_sig)
+                self.runner.signals.update_sig.disconnect(self.get_bfs_sig)
+                self.runner.signals.exit_sig.disconnect(self.get_bfs_exit_sig)
+            else:
+                #self.runner.signals.start_sig.disconnect(self.get_astar_sig)
+                self.runner.signals.update_sig.disconnect(self.get_astar_sig)
+                self.runner.signals.exit_sig.disconnect(self.get_astar_exit_sig)
             self.runner = None
+
+    def start_astar(self):
+        maze = self.scene.bfs_arr
+        if not self.runner:
+            self.runner = AStarRunner(maze)
+            QThreadPool.globalInstance().start(self.runner)
+            self.runner.signals.update_sig.connect(self.get_bfs_sig)
+            self.runner.signals.exit_sig.connect(self.get_bfs_exit_sig)
 
     def create_graphic_view(self):
         self.scene = GridScene(self.txtin_file.text(),8)
@@ -94,11 +117,19 @@ class AlgorithmVisualizer(QMainWindow):
         graphic_view = QGraphicsView(self.scene, self)
         self.visualizer_layout.addWidget(graphic_view)
 
+    def get_bfs_start_sig(self, start: int, end: int):
+        self.scene.set_cell_color(start,end, QColor(30,235,71))
 
     def get_bfs_sig(self, start: int, end: int):
         self.scene.set_cell_color(start,end,QColor(158, 29, 68))
 
-    def get_exit_sig(self, start: int, end: int):
+    def get_bfs_exit_sig(self, start: int, end: int):
+        self.scene.set_cell_color(start,end, QColor(30,235,71))
+
+    def get_astar_sig(self, start: int, end: int):
+        self.scene.set_cell_color(start,end,QColor(158, 29, 68))
+
+    def get_astar_exit_sig(self, start: int, end: int):
         self.scene.set_cell_color(start,end, QColor(30,235,71))
 
     def import_file(self):
@@ -108,6 +139,13 @@ class AlgorithmVisualizer(QMainWindow):
     def set_maze(self):
         new_maze = self.txtin_file.text()
         self.scene.load_image(new_maze)
+
+    #def update_timer(self):
+    #    self.time_in_seconds += 1
+    #    minutes = self.time_in_seconds // 60
+    #    seconds = self.time_in_seconds % 60
+    #    self.timer_label.setText(f"{minutes:02d}:{seconds:02d}")
+
 
 
 class GridCell(QGraphicsRectItem):
