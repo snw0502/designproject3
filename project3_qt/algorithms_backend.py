@@ -90,7 +90,9 @@ class Node:
 
 
 class AStarSignals(QObject):
+    start_sig = Signal(int,int)
     update_sig = Signal(int,int)
+    update_sig2 = Signal(int,int)
     exit_sig = Signal(int,int)
     
 
@@ -123,11 +125,17 @@ class AStarRunner(QRunnable):
         for i in range(self.rows):
             if self.grid[i][0] == 8:
                 s = [i,0]
+                self.signals.start_sig.emit(i,0)
+                print("HELLOOOOOOOOOOOOO")
+                print("HELLOOOOOOOOOOOOO")
+                print("HELLOOOOOOOOOOOOO")
+                print("HELLOOOOOOOOOOOOO")
         
         #find end state
         for i in range(self.rows):
             if self.grid[i][self.cols-1] == 8:
                 e = [i,self.cols-1]
+                self.signals.exit_sig.emit(i,self.cols-1)
         
         open_list = []
         closed_set = set()
@@ -144,7 +152,7 @@ class AStarRunner(QRunnable):
             if current_node.x == goal_node.x and current_node.y == goal_node.y:
                 path = []
                 while current_node:
-                    self.signals.update_sig.emit(current_node.x,current_node.y)
+                    self.signals.update_sig2.emit(current_node.x,current_node.y)
                     path.append((current_node.x, current_node.y))
                     current_node = current_node.parent
                 return path[::-1]

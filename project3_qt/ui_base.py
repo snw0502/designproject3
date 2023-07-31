@@ -5,13 +5,58 @@ from custom_widgets import *
 from ui_help import *
 from algorithms_backend import *
 from PIL import Image
+from qt_material import apply_stylesheet
 
 
-class AlgorithmVisualizer(QMainWindow):
+class LaunchWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle("Algorithm Visualizer")
+        self.setWindowTitle("Algorithm Visualier: Launch Window")
+        self.resize(500,500)
+        self.main_layout = QVBoxLayout()
+        self.btn_start_pathfinding_visualizer = QPushButton("Show pathfinding\nvisualizer")
+        self.btn_start_sorting_visualizer = QPushButton("Show sorting\nvisualizer")
+        self.btn_exit = QPushButton("Exit")
+
+        self.main_layout.addWidget(self.btn_start_pathfinding_visualizer)
+        self.main_layout.addWidget(self.btn_start_sorting_visualizer)
+        self.main_layout.addWidget(self.btn_exit)
+
+        self.connect_buttons()
+
+        self.main_widget = Color('purple')
+        self.main_widget.setLayout(self.main_layout)
+        self.setCentralWidget(self.main_widget)
+
+    def connect_buttons(self):
+        self.btn_start_pathfinding_visualizer.clicked.connect(self.start_pathfinder_trigger)
+        self.btn_start_sorting_visualizer.clicked.connect(self.start_sorter_trigger)
+        self.btn_exit.clicked.connect(self.exit_app)
+
+    def start_pathfinder_trigger(self):
+        self.pathfinder = PathfindingVisualizer()
+        self.pathfinder.show()
+
+    def start_sorter_trigger(self):
+        self.sorter = SortingVisualizer()
+        self.sorter.show()
+
+    def exit_app(self):
+        self.pathfinder.close()
+        self.sorter.close()
+        self.close()
+
+
+class SortingVisualizer(QMainWindow):
+    def __init__(self):
+        super().__init__()
+
+class PathfindingVisualizer(QMainWindow):
+    def __init__(self):
+        super().__init__()
+
+        self.setWindowTitle("Pathfinding Visualizer")
         self.resize(1400, 1000)
 
         #draw task
@@ -41,16 +86,17 @@ class AlgorithmVisualizer(QMainWindow):
         self.page_layout.addLayout(self.visualizer_layout)
         
         #BUTTONS
+        self.btn_show_sorting_visualizer = QPushButton("Show sorting visualizer")
         self.btn_breadth_first = QPushButton("Breadth First Search")
         self.btn_a_star = QPushButton("A Star Search")
-        self.btn_quick_sort = QPushButton("Quick Sort")
-        self.btn_select_sort = QPushButton("Selection Sort")
+        #self.btn_quick_sort = QPushButton("Quick Sort")
+        #self.btn_select_sort = QPushButton("Selection Sort")
         self.btn_reset_maze = QPushButton("Reset Maze")
 
         self.button_layout.addWidget(self.btn_breadth_first)
         self.button_layout.addWidget(self.btn_a_star)
-        self.button_layout.addWidget(self.btn_quick_sort)
-        self.button_layout.addWidget(self.btn_select_sort)
+        #self.button_layout.addWidget(self.btn_quick_sort)
+        #self.button_layout.addWidget(self.btn_select_sort)
 
         self.btn_stop = QPushButton("Stop drawing")
         self.button_layout.addWidget(self.btn_stop)
@@ -58,7 +104,8 @@ class AlgorithmVisualizer(QMainWindow):
 
 
         #Grid and stuff
-        self.visualizer_layout.addWidget(UI_Help.create_label("Algorithm Visualizer", Fonts.large_bold_font))
+        #self.visualizer_layout.addWidget(QLabel(" Visualizer"))
+         #   UI_Help.create_label("Algorithm Visualizer", Fonts.large_bold_font))
         
         self.visualizer_layout.addLayout(self.file_layout)
 
@@ -93,8 +140,9 @@ class AlgorithmVisualizer(QMainWindow):
                 self.runner.signals.update_sig.disconnect(self.get_bfs_sig)
                 self.runner.signals.exit_sig.disconnect(self.get_bfs_exit_sig)
             else:
-                #self.runner.signals.start_sig.disconnect(self.get_astar_sig)
+                self.runner.signals.start_sig.disconnect(self.get_astar_start_sig)
                 self.runner.signals.update_sig.disconnect(self.get_astar_sig)
+                self.runner.signals.update_sig2.disconnect(self.get_astar_sig2)
                 self.runner.signals.exit_sig.disconnect(self.get_astar_exit_sig)
             self.runner = None
 
@@ -103,8 +151,10 @@ class AlgorithmVisualizer(QMainWindow):
         if not self.runner:
             self.runner = AStarRunner(maze)
             QThreadPool.globalInstance().start(self.runner)
-            self.runner.signals.update_sig.connect(self.get_bfs_sig)
-            self.runner.signals.exit_sig.connect(self.get_bfs_exit_sig)
+            self.runner.signals.start_sig.connect(self.get_astar_start_sig)
+            self.runner.signals.update_sig.connect(self.get_astar_sig)
+            self.runner.signals.update_sig2.connect(self.get_astar_sig2)
+            self.runner.signals.exit_sig.connect(self.get_astar_exit_sig)
 
     def create_graphic_view(self):
         self.scene = GridScene(self.txtin_file.text(),8)
@@ -117,6 +167,9 @@ class AlgorithmVisualizer(QMainWindow):
         graphic_view = QGraphicsView(self.scene, self)
         self.visualizer_layout.addWidget(graphic_view)
 
+    def btn_show_sorting_visualizer(self):
+        pass
+
     def get_bfs_start_sig(self, start: int, end: int):
         self.scene.set_cell_color(start,end, QColor(30,235,71))
 
@@ -126,8 +179,14 @@ class AlgorithmVisualizer(QMainWindow):
     def get_bfs_exit_sig(self, start: int, end: int):
         self.scene.set_cell_color(start,end, QColor(30,235,71))
 
+    def get_astar_start_sig(self, start: int, end: int):
+        self.scene.set_cell_color(start,end, QColor(30,235,71))
+
     def get_astar_sig(self, start: int, end: int):
         self.scene.set_cell_color(start,end,QColor(158, 29, 68))
+    
+    def get_astar_sig2(self, start: int, end: int):
+        self.scene.set_cell_color(start,end,QColor(50,50,235))
 
     def get_astar_exit_sig(self, start: int, end: int):
         self.scene.set_cell_color(start,end, QColor(30,235,71))
@@ -137,6 +196,7 @@ class AlgorithmVisualizer(QMainWindow):
         self.txtin_file.setText(image_path)
 
     def set_maze(self):
+        self.scene.clear()
         new_maze = self.txtin_file.text()
         self.scene.load_image(new_maze)
 

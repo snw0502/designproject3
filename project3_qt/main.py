@@ -3,7 +3,10 @@ import sys
 
 def main():
     app = QApplication(sys.argv)
-    window = AlgorithmVisualizer()
+    window = LaunchWindow()
+
+    apply_stylesheet(app, theme='dark_cyan.xml')
+
     window.show()
 
     app.exec()
