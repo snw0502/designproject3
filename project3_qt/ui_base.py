@@ -6,6 +6,7 @@ from ui_help import *
 from algorithms_backend import *
 from PIL import Image
 from qt_material import apply_stylesheet
+import math
 
 
 class LaunchWindow(QMainWindow):
@@ -22,6 +23,8 @@ class LaunchWindow(QMainWindow):
         self.main_layout.addWidget(self.btn_start_pathfinding_visualizer)
         self.main_layout.addWidget(self.btn_start_sorting_visualizer)
         self.main_layout.addWidget(self.btn_exit)
+        self.pathfinder = PathfindingVisualizer()
+        self.sorter = SortingVisualizer()
 
         self.connect_buttons()
 
@@ -35,22 +38,15 @@ class LaunchWindow(QMainWindow):
         self.btn_exit.clicked.connect(self.exit_app)
 
     def start_pathfinder_trigger(self):
-        self.pathfinder = PathfindingVisualizer()
         self.pathfinder.show()
 
     def start_sorter_trigger(self):
-        self.sorter = SortingVisualizer()
         self.sorter.show()
 
     def exit_app(self):
         self.pathfinder.close()
         self.sorter.close()
         self.close()
-
-
-class SortingVisualizer(QMainWindow):
-    def __init__(self):
-        super().__init__()
 
 class PathfindingVisualizer(QMainWindow):
     def __init__(self):
@@ -86,26 +82,16 @@ class PathfindingVisualizer(QMainWindow):
         self.page_layout.addLayout(self.visualizer_layout)
         
         #BUTTONS
-        self.btn_show_sorting_visualizer = QPushButton("Show sorting visualizer")
         self.btn_breadth_first = QPushButton("Breadth First Search")
         self.btn_a_star = QPushButton("A Star Search")
-        #self.btn_quick_sort = QPushButton("Quick Sort")
-        #self.btn_select_sort = QPushButton("Selection Sort")
         self.btn_reset_maze = QPushButton("Reset Maze")
 
         self.button_layout.addWidget(self.btn_breadth_first)
         self.button_layout.addWidget(self.btn_a_star)
-        #self.button_layout.addWidget(self.btn_quick_sort)
-        #self.button_layout.addWidget(self.btn_select_sort)
 
         self.btn_stop = QPushButton("Stop drawing")
         self.button_layout.addWidget(self.btn_stop)
         self.button_layout.addWidget(self.btn_reset_maze)
-
-
-        #Grid and stuff
-        #self.visualizer_layout.addWidget(QLabel(" Visualizer"))
-         #   UI_Help.create_label("Algorithm Visualizer", Fonts.large_bold_font))
         
         self.visualizer_layout.addLayout(self.file_layout)
 
@@ -167,14 +153,11 @@ class PathfindingVisualizer(QMainWindow):
         graphic_view = QGraphicsView(self.scene, self)
         self.visualizer_layout.addWidget(graphic_view)
 
-    def btn_show_sorting_visualizer(self):
-        pass
-
     def get_bfs_start_sig(self, start: int, end: int):
         self.scene.set_cell_color(start,end, QColor(30,235,71))
 
     def get_bfs_sig(self, start: int, end: int):
-        self.scene.set_cell_color(start,end,QColor(158, 29, 68))
+        self.scene.set_cell_color(start,end,QColor(25, 250, 255))
 
     def get_bfs_exit_sig(self, start: int, end: int):
         self.scene.set_cell_color(start,end, QColor(30,235,71))
@@ -183,7 +166,7 @@ class PathfindingVisualizer(QMainWindow):
         self.scene.set_cell_color(start,end, QColor(30,235,71))
 
     def get_astar_sig(self, start: int, end: int):
-        self.scene.set_cell_color(start,end,QColor(158, 29, 68))
+        self.scene.set_cell_color(start,end,QColor(25, 250, 255))
     
     def get_astar_sig2(self, start: int, end: int):
         self.scene.set_cell_color(start,end,QColor(50,50,235))
@@ -206,8 +189,6 @@ class PathfindingVisualizer(QMainWindow):
     #    seconds = self.time_in_seconds % 60
     #    self.timer_label.setText(f"{minutes:02d}:{seconds:02d}")
 
-
-
 class GridCell(QGraphicsRectItem):
     def __init__(self, x, y, size):
         super().__init__(x, y, size, size)
@@ -225,7 +206,7 @@ class GridScene(QGraphicsScene):
         super().__init__()
         self.cell_size = cell_size
         self.internal_grid = []
-        #self.load_image(image_path)
+        self.image_path = None
 
     def load_image(self, image_path: str):
         image = Image.open(image_path)
@@ -259,3 +240,142 @@ class GridScene(QGraphicsScene):
         if self.internal_grid[row][col]:
             self.internal_grid[row][col].set_color(color)#updating internal grid
             self.update(self.internal_grid[row][col].rect())#updating visual scene
+
+class SortingVisualizer(QMainWindow):
+    def __init__(self):
+        super().__init__()
+
+        self.setWindowTitle("Sorting Visualizer")
+        self.resize(1400, 1000)
+
+        self.runner = None
+
+
+        #MAIN LAYOUTS
+        self.page_layout = QHBoxLayout()
+        self.button_layout = QVBoxLayout()
+        self.visualizer_layout = QVBoxLayout()
+
+        self.scene = SortingScene()
+
+        self.selector_layout = QHBoxLayout()
+
+        #self.num_elements_dropdown = QComboBox()
+        self.num_elements_slider = QSlider(Qt.Horizontal)
+        self.num_elements_slider.setMinimum(5)
+        self.num_elements_slider.setMaximum(108)
+        self.num_elements_slider.setTickInterval(1)
+        self.num_elements_slider.setSingleStep(1)
+        self.num_elements_slider.setValue(100)
+        self.txtin_num_elements = QLineEdit()
+        self.btn_change_num_elements = QPushButton("Set new num elements")
+        self.btn_change_num_elements.clicked.connect(self.update_num_elems)
+
+        self.btn_quick_sort = QPushButton("Quick Sort")
+        self.btn_select_sort = QPushButton("Selection Sort")
+        self.btn_stop = QPushButton("Stop sorting")
+
+        self.selector_layout.addWidget(self.num_elements_slider)
+        self.selector_layout.addWidget(self.btn_change_num_elements)
+
+        self.visualizer_layout.addLayout(self.selector_layout)
+        
+        self.create_graphic_view()
+
+        self.button_layout.addWidget(self.btn_quick_sort)
+        self.button_layout.addWidget(self.btn_select_sort)
+        self.button_layout.addWidget(self.btn_stop)
+
+        self.btn_quick_sort.clicked.connect(self.start_quicksort)
+        self.btn_stop.clicked.connect(self.stop_sorting)
+
+        self.page_layout.addLayout(self.button_layout)
+        self.page_layout.addLayout(self.visualizer_layout)
+
+        self.main_widget = Color('purple')
+        self.main_widget.setLayout(self.page_layout)
+        self.setCentralWidget(self.main_widget)
+
+    def create_graphic_view(self):
+        self.scene.create_grid_based_on_input(10)
+
+        self.greenBrush = QBrush(Qt.green)
+        self.grayBrush = QBrush(Qt.gray)
+
+        self.pen = QPen(Qt.red)
+
+        self.graphic_view = QGraphicsView(self.scene, self)
+        self.visualizer_layout.addWidget(self.graphic_view)
+
+    def update_num_elems(self):
+        num_elements = self.num_elements_slider.value()
+        self.scene.create_grid_based_on_input(num_elements)
+        self.graphic_view.setScene(self.scene)
+
+    def start_quicksort(self):
+        arr = self.scene.bar_lengths
+        if not self.runner:
+            self.runner = QuickSortRunner(arr)
+            QThreadPool.globalInstance().start(self.runner)
+            self.runner.signals.update_sig.connect(self.get_swap_sig)
+
+    def stop_sorting(self):
+        if self.runner:
+            self.runner.stop()
+            self.runner.signals.update_sig.disconnect(self.get_swap_sig)
+
+    def get_swap_sig(self, i, j):
+        self.scene.swap_bars(i, j)
+
+
+
+class SortingScene(QGraphicsScene):
+    def __init__(self):
+        super().__init__()
+        self.pen = QPen(Qt.black, 2, Qt.SolidLine)
+        self.bar_lengths = []
+
+    def create_grid_based_on_input(self, num_elements):
+        self.clear()
+        self.bar_lengths.clear()
+        for i in range(1,num_elements):
+            self.bar_lengths.append(i)
+
+        random.shuffle(self.bar_lengths)
+
+        spacing = 1
+        bar_width = 10
+        total_width = num_elements * (bar_width + spacing) - spacing
+        scene_left = 50
+        scene_top = 500
+        scene_bottom = -880
+
+        self.setSceneRect(scene_left, scene_top, total_width, scene_bottom)
+
+        for i, bar_height in enumerate(self.bar_lengths):
+            x_pos = scene_left + i * (bar_width + spacing)
+            y_pos = scene_top - bar_height
+
+            rect = self.addRect(x_pos, y_pos, bar_width, bar_height)
+
+            pen = QPen(Qt.black, 2, Qt.SolidLine)
+            rect.setPen(pen)
+
+            brush = QBrush(QColor(random.randint(0, 50), random.randint(0, 200), random.randint(220, 255)))
+            rect.setBrush(brush)
+
+    def swap_bars(self, index1, index2):
+        if index1 < 0 or index2 < 0 or index1 >= len(self.bar_lengths) or index2 >= len(self.bar_lengths):
+            return
+
+        bar1 = self.itemAt(index1, 500)
+        bar2 = self.itemAt(index2, 500)
+        print(self.items())
+
+        if bar1 is not None and bar2 is not None:
+            bar1_x, bar1_y = bar1.x(), bar1.y()
+            bar2_x, bar2_y = bar2.x(), bar2.y()
+            bar1.setPos(bar2_x, bar2_y)
+            bar2.setPos(bar1_x, bar1_y)
+
+            self.bar_lengths[index1], self.bar_lengths[index2] = self.bar_lengths[index2], self.bar_lengths[index1]

@@ -8,7 +8,6 @@ import random
 from collections import deque
 import heapq
 
-# just do bfs for now
 class BreadthFirstSignals(QObject):
     start_sig = Signal(int,int)
     update_sig = Signal(int, int)  #index to update
@@ -88,14 +87,12 @@ class Node:
     def __lt__(self, other):
         return self.f < other.f
 
-
 class AStarSignals(QObject):
     start_sig = Signal(int,int)
     update_sig = Signal(int,int)
     update_sig2 = Signal(int,int)
     exit_sig = Signal(int,int)
     
-
 class AStarRunner(QRunnable):
     def __init__(self, grid):
         super().__init__()
@@ -126,10 +123,6 @@ class AStarRunner(QRunnable):
             if self.grid[i][0] == 8:
                 s = [i,0]
                 self.signals.start_sig.emit(i,0)
-                print("HELLOOOOOOOOOOOOO")
-                print("HELLOOOOOOOOOOOOO")
-                print("HELLOOOOOOOOOOOOO")
-                print("HELLOOOOOOOOOOOOO")
         
         #find end state
         for i in range(self.rows):
@@ -174,3 +167,45 @@ class AStarRunner(QRunnable):
                         heapq.heappush(open_list, neighbor)
             time.sleep(0.005)
         return None
+
+
+class QuickSortSignals(QObject):
+    start_sig = Signal(bool)
+    update_sig = Signal(int,int)
+    end_sig = Signal(bool)
+class QuickSortRunner(QRunnable):
+    def __init__(self, arr):
+        super().__init__()
+        self.signals = QuickSortSignals()
+        self.stop_flag = False
+        self.arr = arr
+        self.low = 0
+        self.high = len(arr)-1
+        #self.sorted_arr = sorted(self.arr)
+
+    def stop(self):
+        self.stop_flag = True
+
+    def partition(self, low, high):
+        pivot = self.arr[high]
+        i = low - 1
+
+        for j in range(low, high):
+            if self.arr[j] < pivot:
+                i += 1
+                self.arr[i], self.arr[j] = self.arr[j], self.arr[i]
+                self.signals.update_sig.emit(i,j)
+        self.signals.update_sig.emit(i+1,high)
+        self.arr[i + 1], self.arr[high] = self.arr[high], self.arr[i + 1]
+        return i + 1
+
+    def quicksort(self, low, high):
+        if low < high:
+            pivot_index = self.partition(low, high)
+            self.quicksort(low, pivot_index - 1)
+            self.quicksort(pivot_index + 1, high)
+
+    def run(self):
+        self.quicksort(0,len(self.arr)-1)
+        time.sleep(0.005)
+        print(f"FINAL ARRAY: {self.arr}")
