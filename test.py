@@ -1,31 +1,90 @@
-def quicksort(arr):
-    def partition(arr, low, high):
-        pivot = arr[high]  # Choose the pivot element (can be any element, here we choose the last element)
-        i = low - 1  # Index of smaller element
+import sys
+import random
+import time
+from PySide6.QtCore import Qt, QThread, Signal, QObject
+from PySide6.QtGui import QPainter, QColor, QBrush
+from PySide6.QtWidgets import QApplication, QGraphicsView, QGraphicsScene, QPushButton, QVBoxLayout, QWidget, QGraphicsRectItem
 
+
+class SortSigs(QObject):
+    sort_step_completed = Signal(list)
+
+class SortingThread(QThread):
+
+    def __init__(self, array):
+        super().__init__()
+        self.array = array
+        self.signals = SortSigs()
+
+    def run(self):
+        self.quick_sort(self.array, 0, len(self.array) - 1)
+
+    def quick_sort(self, array, low, high):
+        if low < high:
+            pivot_idx = self.partition(array, low, high)
+            self.quick_sort(array, low, pivot_idx - 1)
+            self.quick_sort(array, pivot_idx + 1, high)
+            self.sort_step_completed.emit(array[:])
+            time.sleep(0.05)
+
+    def partition(self, array, low, high):
+        pivot = array[high]
+        i = low - 1
         for j in range(low, high):
-            if arr[j] < pivot:
-                # Increment the index of smaller element and swap arr[i] with arr[j]
+            if array[j] <= pivot:
                 i += 1
-                arr[i], arr[j] = arr[j], arr[i]
-
-        # Swap the pivot element with the element at index i+1
-        arr[i + 1], arr[high] = arr[high], arr[i + 1]
+                array[i], array[j] = array[j], array[i]
+                self.signals.sort_step_completed.emit(array[:])
+                time.sleep(0.05)
+        array[i + 1], array[high] = array[high], array[i + 1]
+        self.signals.sort_step_completed.emit(array[:])
         return i + 1
 
-    def quicksort_helper(arr, low, high):
-        if low < high:
-            # Partition the array into two sub-arrays and get the pivot index
-            pivot_index = partition(arr, low, high)
+class BarItem(QGraphicsRectItem):
+    def __init__(self, x, height):
+        super().__init__(x, 0, 20, height * 5)
+        self.setBrush(QColor(Qt.blue))
 
-            # Recursively sort the sub-arrays
-            quicksort_helper(arr, low, pivot_index - 1)
-            quicksort_helper(arr, pivot_index + 1, high)
+class QuickSortApp(QWidget):
+    def __init__(self):
+        super().__init__()
 
-    # Start the quicksort process
-    quicksort_helper(arr, 0, len(arr) - 1)
+        self.array = [random.randint(1, 300) for _ in range(100)]
+        self.sort_thread = SortingThread(self.array)
+        self.sort_thread.sort_step_completed.connect(self.update_array)
 
-# Example usage:
-unsorted_array = [43, 99, 23, 59, 4, 24, 3, 12, 55, 2, 72, 1, 53, 92, 85, 98, 58, 51, 37, 22, 32, 57, 84, 95, 7, 87, 62, 88, 8, 68, 42, 47, 28, 35, 29, 66, 16, 63, 94, 41, 74, 34, 31, 90, 33, 13, 11, 39, 9, 83, 73, 52, 5, 21, 25, 6, 10, 15, 14, 54, 30, 77, 75, 56, 71, 18, 27, 36, 96, 19, 45, 20, 97, 49, 26, 89, 61, 69, 86, 78, 67, 38, 81, 48, 60, 93, 65, 64, 50, 40, 82, 70, 91, 80, 46, 79, 44, 76, 17]
-quicksort(unsorted_array)
-print(unsorted_array)  # Output: [11, 12, 22, 25, 34, 64, 90]
+        self.scene = QGraphicsScene(self)
+        self.view = QGraphicsView(self.scene)
+        layout = QVBoxLayout()
+        layout.addWidget(self.view)
+
+        self.sort_button = QPushButton("Start QuickSort")
+        self.sort_button.clicked.connect(self.start_sorting)
+        layout.addWidget(self.sort_button)
+
+        self.setLayout(layout)
+        self.setWindowTitle("QuickSort Simulation")
+        self.init_scene()
+        self.show()
+
+    def init_scene(self):
+        for idx, value in enumerate(self.array):
+            bar_item = BarItem(idx * 25, value)
+            self.scene.addItem(bar_item)
+
+    def start_sorting(self):
+        self.sort_button.setEnabled(False)
+        self.sort_thread.start()
+
+    def update_array(self, array):
+        self.array = array
+        for idx, value in enumerate(self.array):
+            item = self.scene.itemAt(idx * 25, 0, self.view.transform())
+            if item:
+                item.setRect(idx * 25, 0, 20, value * 5)
+        self.update()
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = QuickSortApp()
+    sys.exit(app.exec_())

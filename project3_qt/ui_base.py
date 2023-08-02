@@ -314,18 +314,22 @@ class SortingVisualizer(QMainWindow):
 
     def start_quicksort(self):
         arr = self.scene.bar_lengths
-        if not self.runner:
-            self.runner = QuickSortRunner(arr)
-            QThreadPool.globalInstance().start(self.runner)
-            self.runner.signals.update_sig.connect(self.get_swap_sig)
+        #if not self.runner:
+        self.thread = SortingThread(arr)
+        self.thread.start()
+        self.thread.update_sig.connect(self.get_swap_sig)
+            
+            #QThreadPool.globalInstance().start(self.runner)
+            #self.runner.signals.update_sig.connect(self.get_swap_sig)
 
     def stop_sorting(self):
-        if self.runner:
-            self.runner.stop()
-            self.runner.signals.update_sig.disconnect(self.get_swap_sig)
+        pass
+        # if self.runner:
+        #     self.runner.stop()
+        #     self.runner.signals.update_sig.disconnect(self.get_swap_sig)
 
-    def get_swap_sig(self, i, j):
-        self.scene.swap_bars(i, j)
+    def get_swap_sig(self, arr):
+        self.scene.swap_bars(arr)
 
 
 
@@ -334,12 +338,13 @@ class SortingScene(QGraphicsScene):
         super().__init__()
         self.pen = QPen(Qt.black, 2, Qt.SolidLine)
         self.bar_lengths = []
+       #self.colors = []
 
     def create_grid_based_on_input(self, num_elements):
         self.clear()
         self.bar_lengths.clear()
         for i in range(1,num_elements):
-            self.bar_lengths.append(i)
+            self.bar_lengths.append(i*5)
 
         random.shuffle(self.bar_lengths)
 
@@ -348,7 +353,7 @@ class SortingScene(QGraphicsScene):
         total_width = num_elements * (bar_width + spacing) - spacing
         scene_left = 50
         scene_top = 500
-        scene_bottom = -880
+        scene_bottom = -800
 
         self.setSceneRect(scene_left, scene_top, total_width, scene_bottom)
 
@@ -360,22 +365,31 @@ class SortingScene(QGraphicsScene):
 
             pen = QPen(Qt.black, 2, Qt.SolidLine)
             rect.setPen(pen)
-
-            brush = QBrush(QColor(random.randint(0, 50), random.randint(0, 200), random.randint(220, 255)))
+            #fill_in_color = QColor(random.randint(0, 50), random.randint(0, 200), random.randint(220, 255))
+            brush = QBrush(QColor(50,200,255))
+            #self.colors.append(fill_in_color)
             rect.setBrush(brush)
 
-    def swap_bars(self, index1, index2):
-        if index1 < 0 or index2 < 0 or index1 >= len(self.bar_lengths) or index2 >= len(self.bar_lengths):
-            return
+    def swap_bars(self, arr):
+        self.bar_lengths = arr
+        self.clear()
+        spacing = 1
+        bar_width = 10
+        total_width = len(arr) * (bar_width + spacing) - spacing
+        scene_left = 50
+        scene_top = 500
+        scene_bottom = -750
 
-        bar1 = self.itemAt(index1, 500)
-        bar2 = self.itemAt(index2, 500)
-        print(self.items())
+        self.setSceneRect(scene_left, scene_top, total_width, scene_bottom)
 
-        if bar1 is not None and bar2 is not None:
-            bar1_x, bar1_y = bar1.x(), bar1.y()
-            bar2_x, bar2_y = bar2.x(), bar2.y()
-            bar1.setPos(bar2_x, bar2_y)
-            bar2.setPos(bar1_x, bar1_y)
+        for i, bar_height in enumerate(arr):
+            x_pos = scene_left + i * (bar_width + spacing)
+            y_pos = scene_top - bar_height
 
-            self.bar_lengths[index1], self.bar_lengths[index2] = self.bar_lengths[index2], self.bar_lengths[index1]
+            rect = self.addRect(x_pos, y_pos, bar_width, bar_height)
+
+            pen = QPen(Qt.black, 2, Qt.SolidLine)
+            rect.setPen(pen)
+
+            brush = QBrush(QColor(50,200,255))
+            rect.setBrush(brush)

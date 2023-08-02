@@ -169,43 +169,33 @@ class AStarRunner(QRunnable):
         return None
 
 
-class QuickSortSignals(QObject):
-    start_sig = Signal(bool)
-    update_sig = Signal(int,int)
-    end_sig = Signal(bool)
-class QuickSortRunner(QRunnable):
-    def __init__(self, arr):
+class SortingThread(QThread):
+    update_sig = Signal(list)
+
+    def __init__(self, array):
         super().__init__()
-        self.signals = QuickSortSignals()
-        self.stop_flag = False
-        self.arr = arr
-        self.low = 0
-        self.high = len(arr)-1
-        #self.sorted_arr = sorted(self.arr)
-
-    def stop(self):
-        self.stop_flag = True
-
-    def partition(self, low, high):
-        pivot = self.arr[high]
-        i = low - 1
-
-        for j in range(low, high):
-            if self.arr[j] < pivot:
-                i += 1
-                self.arr[i], self.arr[j] = self.arr[j], self.arr[i]
-                self.signals.update_sig.emit(i,j)
-        self.signals.update_sig.emit(i+1,high)
-        self.arr[i + 1], self.arr[high] = self.arr[high], self.arr[i + 1]
-        return i + 1
-
-    def quicksort(self, low, high):
-        if low < high:
-            pivot_index = self.partition(low, high)
-            self.quicksort(low, pivot_index - 1)
-            self.quicksort(pivot_index + 1, high)
+        self.array = array
 
     def run(self):
-        self.quicksort(0,len(self.arr)-1)
-        time.sleep(0.005)
-        print(f"FINAL ARRAY: {self.arr}")
+        self.quick_sort(self.array, 0, len(self.array) - 1)
+
+    def quick_sort(self, array, low, high):
+        if low < high:
+            pivot_idx = self.partition(array, low, high)
+            self.quick_sort(array, low, pivot_idx - 1)
+            self.quick_sort(array, pivot_idx + 1, high)
+            self.update_sig.emit(array[:])
+            time.sleep(0.05)
+
+    def partition(self, array, low, high):
+        pivot = array[high]
+        i = low - 1
+        for j in range(low, high):
+            if array[j] <= pivot:
+                i += 1
+                array[i], array[j] = array[j], array[i]
+                self.update_sig.emit(array[:])
+                time.sleep(0.05)
+        array[i + 1], array[high] = array[high], array[i + 1]
+        self.update_sig.emit(array[:])
+        return i + 1
