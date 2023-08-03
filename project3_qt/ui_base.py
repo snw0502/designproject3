@@ -296,6 +296,7 @@ class SortingVisualizer(QMainWindow):
         self.button_layout.addWidget(self.btn_stop)
 
         self.btn_quick_sort.clicked.connect(self.start_quicksort)
+        self.btn_select_sort.clicked.connect(self.start_selectionsort)
         self.btn_stop.clicked.connect(self.stop_sorting)
 
         self.page_layout.addLayout(self.button_layout)
@@ -330,6 +331,12 @@ class SortingVisualizer(QMainWindow):
             
             #QThreadPool.globalInstance().start(self.runner)
             #self.runner.signals.update_sig.connect(self.get_swap_sig)
+
+    def start_selectionsort(self):
+        arr = self.scene.bar_lengths
+        self.thread = SelectionSortThread(arr)
+        self.thread.start()
+        self.thread.update_sig.connect(self.get_swap_sig)
 
     def stop_sorting(self):
         pass

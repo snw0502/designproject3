@@ -177,13 +177,14 @@ class AStarRunner(QRunnable):
             time.sleep(0.005)
         return None
 
-
 class SortingThread(QThread):
     update_sig = Signal(list)
+    #num_comparison_sig = Signal(int)
 
     def __init__(self, array):
         super().__init__()
         self.array = array
+        #self.num_comparisons = 0
 
     def run(self):
         self.quick_sort(self.array, 0, len(self.array) - 1)
@@ -208,3 +209,24 @@ class SortingThread(QThread):
         array[i + 1], array[high] = array[high], array[i + 1]
         self.update_sig.emit(array[:])
         return i + 1
+
+class SelectionSortThread(QThread):
+    update_sig = Signal(list)
+    #num_comparison_sig = Signal(int)
+
+    def __init__(self, array):
+        super().__init__()
+        self.array = array
+        #self.num_comparisons = 0
+
+    def run(self):
+        arr_size = len(self.array)
+        for i in range(arr_size):
+            min_idx = i
+
+            for j in range(i + 1, arr_size):
+                if self.array[j] < self.array[min_idx]:
+                    min_idx = j
+            (self.array[i], self.array[min_idx]) = (self.array[min_idx], self.array[i])
+            self.update_sig.emit(self.array)
+            time.sleep(0.05)
