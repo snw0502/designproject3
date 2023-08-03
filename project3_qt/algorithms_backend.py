@@ -12,6 +12,7 @@ class BreadthFirstSignals(QObject):
     start_sig = Signal(int,int)
     update_sig = Signal(int, int)  #index to update
     exit_sig = Signal(int, int)
+    count_sig = Signal(int)
 
 class BreadthFirstRunner(QRunnable):
     def __init__(self, grid):
@@ -39,7 +40,7 @@ class BreadthFirstRunner(QRunnable):
         my_queue = deque()
         explored = [[False for _ in range(self.cols)] for _ in range(self.rows)]
 
-
+        num_searched = 0
         #find start state
         for i in range(self.rows):
             if self.grid[i][0] == 8:
@@ -70,9 +71,11 @@ class BreadthFirstRunner(QRunnable):
                             return next_states[i]
                         else:
                             print(f"explored element: {next_states[i]}")
-                            self.signals.update_sig.emit(next_states[i][0],next_states[i][1])
                             my_queue.append(next_states[i])
                             explored[next_states[i][0]][next_states[i][1]] = True
+                            self.signals.update_sig.emit(next_states[i][0],next_states[i][1])
+                        num_searched += 1
+                        self.signals.count_sig.emit(num_searched)
             time.sleep(0.005)
 
 class Node:
@@ -92,6 +95,7 @@ class AStarSignals(QObject):
     update_sig = Signal(int,int)
     update_sig2 = Signal(int,int)
     exit_sig = Signal(int,int)
+    count_sig = Signal(int)
     
 class AStarRunner(QRunnable):
     def __init__(self, grid):
@@ -101,6 +105,7 @@ class AStarRunner(QRunnable):
         self.grid = grid
         self.rows = len(grid)
         self.cols = len(grid[0])
+        self.visited_nodes = set()
     
     def stop(self):
         self.stop_flag = True
@@ -117,7 +122,7 @@ class AStarRunner(QRunnable):
         return neighbors
 
     def run(self):
-
+        num_elems = 0
         #find start state
         for i in range(self.rows):
             if self.grid[i][0] == 8:
@@ -141,6 +146,10 @@ class AStarRunner(QRunnable):
         while open_list:
             current_node = heapq.heappop(open_list)
             self.signals.update_sig.emit(current_node.x,current_node.y)
+            if (current_node.x, current_node.y) not in self.visited_nodes:
+                self.visited_nodes.add((current_node.x, current_node.y))
+                num_elems += 1
+                self.signals.count_sig.emit(num_elems)
 
             if current_node.x == goal_node.x and current_node.y == goal_node.y:
                 path = []

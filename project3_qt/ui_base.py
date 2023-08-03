@@ -58,10 +58,6 @@ class PathfindingVisualizer(QMainWindow):
         #draw task
         self.runner = None
 
-        #self.timer = QTimer()
-        #self.timer.startTimer(1,)
-        #self.timer.timeout.connect(self.update_timer)
-
         #MAIN LAYOUTS
         self.page_layout = QHBoxLayout()
         self.button_layout = QVBoxLayout()
@@ -86,12 +82,22 @@ class PathfindingVisualizer(QMainWindow):
         self.btn_a_star = QPushButton("A Star Search")
         self.btn_reset_maze = QPushButton("Reset Maze")
 
+        self.num_elems_searched_label = QLabel("Operations Performed: 0")
+        self.num_elems_searched_label.setFixedHeight(40)
+
+        self.button_layout.setContentsMargins(10,10,10,10)
+        self.button_layout.setSpacing(20)
+        self.button_layout.setAlignment(Qt.AlignHCenter)
+        
         self.button_layout.addWidget(self.btn_breadth_first)
         self.button_layout.addWidget(self.btn_a_star)
 
         self.btn_stop = QPushButton("Stop drawing")
         self.button_layout.addWidget(self.btn_stop)
         self.button_layout.addWidget(self.btn_reset_maze)
+
+
+        self.button_layout.addWidget(self.num_elems_searched_label)
         
         self.visualizer_layout.addLayout(self.file_layout)
 
@@ -117,6 +123,7 @@ class PathfindingVisualizer(QMainWindow):
             self.runner.signals.start_sig.connect(self.get_bfs_start_sig)
             self.runner.signals.update_sig.connect(self.get_bfs_sig)
             self.runner.signals.exit_sig.connect(self.get_bfs_exit_sig)
+            self.runner.signals.count_sig.connect(self.get_count_sig)
 
     def stop_thread(self):
         if self.runner:
@@ -125,11 +132,13 @@ class PathfindingVisualizer(QMainWindow):
                 self.runner.signals.start_sig.disconnect(self.get_bfs_start_sig)
                 self.runner.signals.update_sig.disconnect(self.get_bfs_sig)
                 self.runner.signals.exit_sig.disconnect(self.get_bfs_exit_sig)
+                self.runner.signals.count_sig.disconnect(self.get_count_sig)
             else:
                 self.runner.signals.start_sig.disconnect(self.get_astar_start_sig)
                 self.runner.signals.update_sig.disconnect(self.get_astar_sig)
                 self.runner.signals.update_sig2.disconnect(self.get_astar_sig2)
                 self.runner.signals.exit_sig.disconnect(self.get_astar_exit_sig)
+                self.runner.signals.count_sig.disconnect(self.get_count_sig)
             self.runner = None
 
     def start_astar(self):
@@ -141,6 +150,7 @@ class PathfindingVisualizer(QMainWindow):
             self.runner.signals.update_sig.connect(self.get_astar_sig)
             self.runner.signals.update_sig2.connect(self.get_astar_sig2)
             self.runner.signals.exit_sig.connect(self.get_astar_exit_sig)
+            self.runner.signals.count_sig.connect(self.get_count_sig)
 
     def create_graphic_view(self):
         self.scene = GridScene(self.txtin_file.text(),8)
@@ -152,6 +162,9 @@ class PathfindingVisualizer(QMainWindow):
 
         graphic_view = QGraphicsView(self.scene, self)
         self.visualizer_layout.addWidget(graphic_view)
+
+    def get_count_sig(self, num: int):
+        self.num_elems_searched_label.setText(f"Operations Performed : {num}")
 
     def get_bfs_start_sig(self, start: int, end: int):
         self.scene.set_cell_color(start,end, QColor(30,235,71))
@@ -182,12 +195,7 @@ class PathfindingVisualizer(QMainWindow):
         self.scene.clear()
         new_maze = self.txtin_file.text()
         self.scene.load_image(new_maze)
-
-    #def update_timer(self):
-    #    self.time_in_seconds += 1
-    #    minutes = self.time_in_seconds // 60
-    #    seconds = self.time_in_seconds % 60
-    #    self.timer_label.setText(f"{minutes:02d}:{seconds:02d}")
+        self.num_elems_searched_label.setText("Operations Performed: 0")
 
 class GridCell(QGraphicsRectItem):
     def __init__(self, x, y, size):
@@ -207,6 +215,7 @@ class GridScene(QGraphicsScene):
         self.cell_size = cell_size
         self.internal_grid = []
         self.image_path = None
+        self.bfs_arr = None
 
     def load_image(self, image_path: str):
         image = Image.open(image_path)
