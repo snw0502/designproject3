@@ -1,8 +1,6 @@
 from PySide6.QtCore import *
 from PySide6.QtWidgets import *
 from PySide6.QtGui import *
-from custom_widgets import *
-from ui_help import *
 from algorithms_backend import *
 from PIL import Image
 from qt_material import apply_stylesheet
@@ -28,7 +26,13 @@ class LaunchWindow(QMainWindow):
 
         self.connect_buttons()
 
-        self.main_widget = Color('purple')
+        self.main_widget = QWidget()
+        self.main_widget.setAutoFillBackground(True)
+        
+        palette = self.main_widget.palette()
+        palette.setColor(QPalette.Window, QColor(25,255,255))
+        self.setPalette(palette)
+
         self.main_widget.setLayout(self.main_layout)
         self.setCentralWidget(self.main_widget)
 
@@ -111,7 +115,13 @@ class PathfindingVisualizer(QMainWindow):
         self.btn_stop.clicked.connect(self.stop_thread)
         self.btn_reset_maze.clicked.connect(self.set_maze)
 
-        self.main_widget = Color('purple')
+        self.main_widget = QWidget()
+        self.main_widget.setAutoFillBackground(True)
+        
+        palette = self.main_widget.palette()
+        palette.setColor(QPalette.Window, QColor(25,255,255))
+        self.setPalette(palette)
+
         self.main_widget.setLayout(self.page_layout)
         self.setCentralWidget(self.main_widget)
 
@@ -311,7 +321,13 @@ class SortingVisualizer(QMainWindow):
         self.page_layout.addLayout(self.button_layout)
         self.page_layout.addLayout(self.visualizer_layout)
 
-        self.main_widget = Color('purple')
+        self.main_widget = QWidget()
+        self.main_widget.setAutoFillBackground(True)
+        
+        palette = self.main_widget.palette()
+        palette.setColor(QPalette.Window, QColor(25,255,255))
+        self.setPalette(palette)
+
         self.main_widget.setLayout(self.page_layout)
         self.setCentralWidget(self.main_widget)
     

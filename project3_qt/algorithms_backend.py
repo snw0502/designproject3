@@ -1,8 +1,7 @@
 from PySide6.QtCore import *
 from PySide6.QtWidgets import *
 from PySide6.QtGui import *
-from custom_widgets import *
-from ui_help import *
+
 import time
 import random
 from collections import deque
@@ -225,12 +224,12 @@ class QuickSortRunner(QRunnable):
             if array[j] <= pivot:
                 i += 1
                 array[i], array[j] = array[j], array[i]
-                self.update_sig.emit(array[:])
+                self.signals.update_sig.emit(array[:])
                 self.num_comparisons += 1
-                self.num_comparison_sig.emit(self.num_comparisons)
+                self.signals.num_comparison_sig.emit(self.num_comparisons)
                 time.sleep(0.05)
         array[i + 1], array[high] = array[high], array[i + 1]
-        self.update_sig.emit(array[:])
+        self.signals.update_sig.emit(array[:])
         return i + 1
 
 class SelectionSortSignals(QObject):
