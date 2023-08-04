@@ -12,6 +12,9 @@ https://doc.qt.io/qtforpython-6/PySide6/QtWidgets/index.html
 
 Other Resources:
 
+(app theme: Dark Cyan)
+https://github.com/UN-GCPDS/qt-material
+
 (maze generator for pathfinding algorithms)
 https://keesiemeijer.github.io/maze-generator/
 

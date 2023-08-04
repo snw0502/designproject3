@@ -179,6 +179,7 @@ class AStarRunner(QRunnable):
 class QuickSortSignals(QObject):
     update_sig = Signal(list)
     num_comparison_sig = Signal(int)
+    done_sig = Signal(list)
 
 class QuickSortRunner(QRunnable):
     def __init__(self, array):
@@ -192,30 +193,19 @@ class QuickSortRunner(QRunnable):
         self.stop_flag = True
 
     def run(self):
+        self.stop_flag = False
         self.quick_sort(self.array, 0, len(self.array) - 1)
+        time.sleep(0.5)
+        self.signals.done_sig.emit(sorted(self.array))
 
     def quick_sort(self, array, low, high):
-        if low < high:
-            pivot_idx = self.partition(array, low, high)
-            self.quick_sort(array, low, pivot_idx - 1)
-            self.quick_sort(array, pivot_idx + 1, high)
-            self.signals.update_sig.emit(array[:])
-            time.sleep(0.05)
-
-    def partition(self, array, low, high):
-        pivot = array[high]
-        i = low - 1
-        for j in range(low, high):
-            if array[j] <= pivot:
-                i += 1
-                array[i], array[j] = array[j], array[i]
+        if self.stop_flag == False:
+            if low < high:
+                pivot_idx = self.partition(array, low, high)
+                self.quick_sort(array, low, pivot_idx - 1)
+                self.quick_sort(array, pivot_idx + 1, high)
                 self.signals.update_sig.emit(array[:])
-                self.num_comparisons += 1
-                self.signals.num_comparison_sig.emit(self.num_comparisons)
                 time.sleep(0.05)
-        array[i + 1], array[high] = array[high], array[i + 1]
-        self.signals.update_sig.emit(array[:])
-        return i + 1
 
     def partition(self, array, low, high):
         pivot = array[high]
@@ -235,6 +225,7 @@ class QuickSortRunner(QRunnable):
 class SelectionSortSignals(QObject):
     update_sig = Signal(list)
     num_comparison_sig = Signal(int)
+    done_sig = Signal(list)
 
 class SelectionSortRunner(QRunnable):
     def __init__(self, array):
@@ -260,3 +251,4 @@ class SelectionSortRunner(QRunnable):
             self.num_comparisons += 1
             self.signals.num_comparison_sig.emit(self.num_comparisons)
             time.sleep(0.05)
+        self.signals.done_sig.emit(self.array)

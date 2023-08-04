@@ -66,12 +66,12 @@ class PathfindingVisualizer(QMainWindow):
         self.page_layout = QHBoxLayout()
         self.button_layout = QVBoxLayout()
         self.visualizer_layout = QVBoxLayout()
-
         self.file_layout = QHBoxLayout()
 
-        self.txtin_file = QLineEdit("./maze2.png")
-        self.btn_import = QPushButton("Import")
-        self.btn_set_maze = QPushButton("Set new maze")
+        self.txtin_file = QLineEdit("select maze using import button")
+        self.btn_import = QPushButton("Import Maze")
+        self.btn_set_maze = QPushButton("Set New Maze")
+        self.txtin_file.setStyleSheet("color: white;")
 
         self.file_layout.addWidget(self.txtin_file)
         self.file_layout.addWidget(self.btn_import)
@@ -357,6 +357,7 @@ class SortingVisualizer(QMainWindow):
             QThreadPool.globalInstance().start(self.runner)
             self.runner.signals.update_sig.connect(self.get_swap_sig)
             self.runner.signals.num_comparison_sig.connect(self.get_count_sig)
+            self.runner.signals.done_sig.connect(self.get_done_sig)
 
     def start_selectionsort(self):
         arr = self.scene.bar_lengths
@@ -365,12 +366,20 @@ class SortingVisualizer(QMainWindow):
             QThreadPool.globalInstance().start(self.runner)
             self.runner.signals.update_sig.connect(self.get_swap_sig)
             self.runner.signals.num_comparison_sig.connect(self.get_count_sig)
+            self.runner.signals.done_sig.connect(self.get_done_sig)
 
     def stop_sorting(self):
-        if self.runner:
+        if type(self.runner) == QuickSortRunner:
             self.runner.stop()
             self.runner.signals.update_sig.disconnect(self.get_swap_sig)
             self.runner.signals.num_comparison_sig.disconnect(self.get_count_sig)
+            self.runner.signals.done_sig.disconnect(self.get_done_sig)
+        elif type(self.runner) == SelectionSortRunner:
+            self.runner.stop()
+            self.runner.signals.update_sig.disconnect(self.get_swap_sig)
+            self.runner.signals.num_comparison_sig.disconnect(self.get_count_sig)
+            self.runner.signals.done_sig.disconnect(self.get_done_sig)
+        self.runner = None
 
     def get_swap_sig(self, arr):
         self.scene.swap_bars(arr)
@@ -378,14 +387,14 @@ class SortingVisualizer(QMainWindow):
     def get_count_sig(self, count):
         self.num_elems_searched_label.setText(f"Comparisons Performed: {count}")
 
-
+    def get_done_sig(self, arr):
+        self.scene.done_bars(arr)
 
 class SortingScene(QGraphicsScene):
     def __init__(self):
         super().__init__()
         self.pen = QPen(Qt.black, 2, Qt.SolidLine)
         self.bar_lengths = []
-       #self.colors = []
 
     def create_grid_based_on_input(self, num_elements):
         self.clear()
@@ -412,9 +421,7 @@ class SortingScene(QGraphicsScene):
 
             pen = QPen(Qt.black, 2, Qt.SolidLine)
             rect.setPen(pen)
-            #fill_in_color = QColor(random.randint(0, 50), random.randint(0, 200), random.randint(220, 255))
             brush = QBrush(QColor(50,200,255))
-            #self.colors.append(fill_in_color)
             rect.setBrush(brush)
 
     def swap_bars(self, arr):
@@ -439,4 +446,28 @@ class SortingScene(QGraphicsScene):
             rect.setPen(pen)
 
             brush = QBrush(QColor(50,200,255))
+            rect.setBrush(brush)
+
+    def done_bars(self, arr):
+        self.bar_lengths = arr
+        self.clear()
+        spacing = 1
+        bar_width = 10
+        total_width = len(arr) * (bar_width + spacing) - spacing
+        scene_left = 50
+        scene_top = 500
+        scene_bottom = -750
+
+        self.setSceneRect(scene_left, scene_top, total_width, scene_bottom)
+
+        for i, bar_height in enumerate(arr):
+            x_pos = scene_left + i * (bar_width + spacing)
+            y_pos = scene_top - bar_height
+
+            rect = self.addRect(x_pos, y_pos, bar_width, bar_height)
+
+            pen = QPen(Qt.black, 2, Qt.SolidLine)
+            rect.setPen(pen)
+
+            brush = QBrush(QColor(0,255,0))
             rect.setBrush(brush)
