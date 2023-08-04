@@ -11,6 +11,11 @@ https://doc.qt.io/qtforpython-6/PySide6/QtWidgets/index.html
 
 
 Other Resources:
+
+(maze generator for pathfinding algorithms)
+https://keesiemeijer.github.io/maze-generator/
+
+(algorithm help)
 https://www.geeksforgeeks.org/implementation-of-bfs-using-adjacency-matrix/
 
 https://www.geeksforgeeks.org/a-search-algorithm/
