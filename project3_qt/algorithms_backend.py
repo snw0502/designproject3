@@ -177,14 +177,20 @@ class AStarRunner(QRunnable):
             time.sleep(0.005)
         return None
 
-class SortingThread(QThread):
+class QuickSortSignals(QObject):
     update_sig = Signal(list)
     num_comparison_sig = Signal(int)
 
+class QuickSortRunner(QRunnable):
     def __init__(self, array):
         super().__init__()
+        self.signals = QuickSortSignals()
         self.array = array
         self.num_comparisons = 0
+        self.stop_flag = False
+    
+    def stop(self):
+        self.stop_flag = True
 
     def run(self):
         self.quick_sort(self.array, 0, len(self.array) - 1)
@@ -194,8 +200,23 @@ class SortingThread(QThread):
             pivot_idx = self.partition(array, low, high)
             self.quick_sort(array, low, pivot_idx - 1)
             self.quick_sort(array, pivot_idx + 1, high)
-            self.update_sig.emit(array[:])
+            self.signals.update_sig.emit(array[:])
             time.sleep(0.05)
+
+    def partition(self, array, low, high):
+        pivot = array[high]
+        i = low - 1
+        for j in range(low, high):
+            if array[j] <= pivot:
+                i += 1
+                array[i], array[j] = array[j], array[i]
+                self.signals.update_sig.emit(array[:])
+                self.num_comparisons += 1
+                self.signals.num_comparison_sig.emit(self.num_comparisons)
+                time.sleep(0.05)
+        array[i + 1], array[high] = array[high], array[i + 1]
+        self.signals.update_sig.emit(array[:])
+        return i + 1
 
     def partition(self, array, low, high):
         pivot = array[high]
@@ -212,14 +233,20 @@ class SortingThread(QThread):
         self.update_sig.emit(array[:])
         return i + 1
 
-class SelectionSortThread(QThread):
+class SelectionSortSignals(QObject):
     update_sig = Signal(list)
     num_comparison_sig = Signal(int)
 
+class SelectionSortRunner(QRunnable):
     def __init__(self, array):
         super().__init__()
         self.array = array
         self.num_comparisons = 0
+        self.stop_flag = False
+        self.signals = SelectionSortSignals()
+    
+    def stop(self):
+        self.stop_flag = True
 
     def run(self):
         arr_size = len(self.array)
@@ -230,7 +257,7 @@ class SelectionSortThread(QThread):
                 if self.array[j] < self.array[min_idx]:
                     min_idx = j
             (self.array[i], self.array[min_idx]) = (self.array[min_idx], self.array[i])
-            self.update_sig.emit(self.array)
+            self.signals.update_sig.emit(self.array)
             self.num_comparisons += 1
-            self.num_comparison_sig.emit(self.num_comparisons)
+            self.signals.num_comparison_sig.emit(self.num_comparisons)
             time.sleep(0.05)

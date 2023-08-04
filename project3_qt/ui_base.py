@@ -336,27 +336,25 @@ class SortingVisualizer(QMainWindow):
 
     def start_quicksort(self):
         arr = self.scene.bar_lengths
-        #if not self.runner:
-        self.thread = SortingThread(arr)
-        self.thread.start()
-        self.thread.update_sig.connect(self.get_swap_sig)
-        self.thread.num_comparison_sig.connect(self.get_count_sig)
-            
-            #QThreadPool.globalInstance().start(self.runner)
-            #self.runner.signals.update_sig.connect(self.get_swap_sig)
+        if not self.runner:
+            self.runner = QuickSortRunner(arr)
+            QThreadPool.globalInstance().start(self.runner)
+            self.runner.signals.update_sig.connect(self.get_swap_sig)
+            self.runner.signals.num_comparison_sig.connect(self.get_count_sig)
 
     def start_selectionsort(self):
         arr = self.scene.bar_lengths
-        self.thread = SelectionSortThread(arr)
-        self.thread.start()
-        self.thread.update_sig.connect(self.get_swap_sig)
-        self.thread.num_comparison_sig.connect(self.get_count_sig)
+        if not self.runner:
+            self.runner = SelectionSortRunner(arr)
+            QThreadPool.globalInstance().start(self.runner)
+            self.runner.signals.update_sig.connect(self.get_swap_sig)
+            self.runner.signals.num_comparison_sig.connect(self.get_count_sig)
 
     def stop_sorting(self):
-        pass
-        # if self.runner:
-        #     self.runner.stop()
-        #     self.runner.signals.update_sig.disconnect(self.get_swap_sig)
+        if self.runner:
+            self.runner.stop()
+            self.runner.signals.update_sig.disconnect(self.get_swap_sig)
+            self.runner.signals.num_comparison_sig.disconnect(self.get_count_sig)
 
     def get_swap_sig(self, arr):
         self.scene.swap_bars(arr)
