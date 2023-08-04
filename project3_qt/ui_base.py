@@ -255,10 +255,9 @@ class SortingVisualizer(QMainWindow):
         super().__init__()
 
         self.setWindowTitle("Sorting Visualizer")
-        self.resize(1400, 1000)
+        self.resize(1650, 1000)
 
         self.runner = None
-
 
         #MAIN LAYOUTS
         self.page_layout = QHBoxLayout()
@@ -269,14 +268,15 @@ class SortingVisualizer(QMainWindow):
 
         self.selector_layout = QHBoxLayout()
 
-        #self.num_elements_dropdown = QComboBox()
         self.num_elements_slider = QSlider(Qt.Horizontal)
         self.num_elements_slider.setMinimum(5)
-        self.num_elements_slider.setMaximum(108)
+        self.num_elements_slider.setMaximum(125)
         self.num_elements_slider.setTickInterval(1)
         self.num_elements_slider.setSingleStep(1)
-        self.num_elements_slider.setValue(100)
-        self.txtin_num_elements = QLineEdit()
+        self.num_elements_slider.setValue(5)
+
+        self.num_elements_display = QLabel(f"{self.num_elements_slider.value()}")
+        self.num_elements_slider.valueChanged.connect(self.change_num_elems_label)
         self.btn_change_num_elements = QPushButton("Set new num elements")
         self.btn_change_num_elements.clicked.connect(self.update_num_elems)
 
@@ -284,6 +284,14 @@ class SortingVisualizer(QMainWindow):
         self.btn_select_sort = QPushButton("Selection Sort")
         self.btn_stop = QPushButton("Stop sorting")
 
+        self.num_elems_searched_label = QLabel("Comparisons Performed: 0")
+        self.num_elems_searched_label.setFixedHeight(40)
+
+        self.button_layout.setContentsMargins(10,10,10,10)
+        self.button_layout.setSpacing(20)
+        self.button_layout.setAlignment(Qt.AlignHCenter)
+
+        self.selector_layout.addWidget(self.num_elements_display)
         self.selector_layout.addWidget(self.num_elements_slider)
         self.selector_layout.addWidget(self.btn_change_num_elements)
 
@@ -294,6 +302,7 @@ class SortingVisualizer(QMainWindow):
         self.button_layout.addWidget(self.btn_quick_sort)
         self.button_layout.addWidget(self.btn_select_sort)
         self.button_layout.addWidget(self.btn_stop)
+        self.button_layout.addWidget(self.num_elems_searched_label)
 
         self.btn_quick_sort.clicked.connect(self.start_quicksort)
         self.btn_select_sort.clicked.connect(self.start_selectionsort)
@@ -305,9 +314,12 @@ class SortingVisualizer(QMainWindow):
         self.main_widget = Color('purple')
         self.main_widget.setLayout(self.page_layout)
         self.setCentralWidget(self.main_widget)
+    
+    def change_num_elems_label(self):
+        self.num_elements_display.setText(f"{self.num_elements_slider.value()}")
 
     def create_graphic_view(self):
-        self.scene.create_grid_based_on_input(10)
+        self.scene.create_grid_based_on_input(self.num_elements_slider.value())
 
         self.greenBrush = QBrush(Qt.green)
         self.grayBrush = QBrush(Qt.gray)
@@ -328,6 +340,7 @@ class SortingVisualizer(QMainWindow):
         self.thread = SortingThread(arr)
         self.thread.start()
         self.thread.update_sig.connect(self.get_swap_sig)
+        self.thread.num_comparison_sig.connect(self.get_count_sig)
             
             #QThreadPool.globalInstance().start(self.runner)
             #self.runner.signals.update_sig.connect(self.get_swap_sig)
@@ -337,6 +350,7 @@ class SortingVisualizer(QMainWindow):
         self.thread = SelectionSortThread(arr)
         self.thread.start()
         self.thread.update_sig.connect(self.get_swap_sig)
+        self.thread.num_comparison_sig.connect(self.get_count_sig)
 
     def stop_sorting(self):
         pass
@@ -346,6 +360,9 @@ class SortingVisualizer(QMainWindow):
 
     def get_swap_sig(self, arr):
         self.scene.swap_bars(arr)
+
+    def get_count_sig(self, count):
+        self.num_elems_searched_label.setText(f"Comparisons Performed: {count}")
 
 
 
@@ -359,7 +376,7 @@ class SortingScene(QGraphicsScene):
     def create_grid_based_on_input(self, num_elements):
         self.clear()
         self.bar_lengths.clear()
-        for i in range(1,num_elements):
+        for i in range(1,num_elements+1):
             self.bar_lengths.append(i*5)
 
         random.shuffle(self.bar_lengths)
