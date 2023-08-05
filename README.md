@@ -40,24 +40,25 @@ General Python Libraries: time, PIL, collections/deque, heapq, random
 # RESOURCES
 
 GUI Framework Used:
-https://pypi.org/project/PySide6/
 
-https://doc.qt.io/qtforpython-6/PySide6/QtWidgets/index.html
+- https://pypi.org/project/PySide6/
+
+- https://doc.qt.io/qtforpython-6/PySide6/QtWidgets/index.html
 
 
 Other Resources:
 
 (app theme: Dark Cyan)
-https://github.com/UN-GCPDS/qt-material
+- https://github.com/UN-GCPDS/qt-material
 
 (maze generator for pathfinding algorithms)
-https://keesiemeijer.github.io/maze-generator/
+- https://keesiemeijer.github.io/maze-generator/
 
 (algorithm help)
-https://www.geeksforgeeks.org/implementation-of-bfs-using-adjacency-matrix/
+- https://www.geeksforgeeks.org/implementation-of-bfs-using-adjacency-matrix/
 
-https://www.geeksforgeeks.org/a-search-algorithm/
+- https://www.geeksforgeeks.org/a-search-algorithm/
 
-https://www.geeksforgeeks.org/quick-sort/
+- https://www.geeksforgeeks.org/quick-sort/
 
-https://www.geeksforgeeks.org/python-program-for-selection-sort/
+- https://www.geeksforgeeks.org/python-program-for-selection-sort/
