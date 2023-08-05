@@ -22,6 +22,9 @@ project3/solved_mazes_ref:
 - includes all pre-generated mazes solved using A* on the maze generator linked below. 
 - included to show that my application produces the correct shortest path
 
+Wilson_Final_Presentation.pdf: my final presentation used in my Final Demonstration video
+Wilson_Final_report.pdf: my final project write-up with detailed descriptions of the design process and results
+
 
 # MODULES/LIBRARIES NEEDED:
 PySide6: 
