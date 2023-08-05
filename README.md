@@ -22,12 +22,18 @@ project3/solved_mazes_ref:
 - included to show that my application produces the correct shortest path
 
 
-MODULES/LIBRARIES NEEDED:
-  PySide6: pip install pyside6
-  Qt-material: pip install qt-material
+# MODULES/LIBRARIES NEEDED:
+PySide6: 
+- pip install pyside6
 
-  General Python Libraries: time, PIL, collections/deque, heapq, random
-  
+Qt-material: 
+- pip install qt-material
+
+General Python Libraries: time, PIL, collections/deque, heapq, random
+
+
+# RESOURCES
+
 GUI Framework Used:
 https://pypi.org/project/PySide6/
 
