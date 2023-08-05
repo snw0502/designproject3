@@ -4,6 +4,30 @@ Junior Design Project 3 - Shelby Wilson
 Pathfinding Visualizer: Breadth First Search, A* Algorithm
 Sorting Visualizer: Quick Sort, Selection Sort
 
+Navigating this repository:
+
+project3/mazes directory:
+
+      * includes pre-generated mazes (from the maze generator linked below) for use in the pathfinding visualizer
+
+project3/project3_qt:
+
+      * main project files:
+          * algorithms_backend.py: contains all back-end components (Algorithm Runners and Signal containers that run the algorithms and send signals to front-end)
+          * main.py: main program file, run the application using this file and python3 interpreter
+          * ui_base.py: contains all front-end components: (main windows and customized QGraphicsScene objects)
+
+project3/solved_mazes_ref:
+
+      * includes all pre-generated mazes solved using A* on the maze generator linked below. included to show that my application produces the correct shortest path
+
+
+MODULES/LIBRARIES NEEDED:
+  PySide6: pip install pyside6
+  Qt-material: pip install qt-material
+
+  General Python Libraries: time, PIL, collections/deque, heapq, random
+  
 GUI Framework Used:
 https://pypi.org/project/PySide6/
 
