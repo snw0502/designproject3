@@ -4,6 +4,10 @@ Junior Design Project 3 - Shelby Wilson
 Pathfinding Visualizer: Breadth First Search, A* Algorithm
 Sorting Visualizer: Quick Sort, Selection Sort
 
+# DEMONSTRATION VIDEO LINK
+- https://youtu.be/8HYPGi3eN0U
+
+
 # Cloning repo
 - git clone https://github.com/snw0502/designproject3
 
