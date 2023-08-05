@@ -4,7 +4,7 @@ Junior Design Project 3 - Shelby Wilson
 Pathfinding Visualizer: Breadth First Search, A* Algorithm
 Sorting Visualizer: Quick Sort, Selection Sort
 
-Navigating this repository:
+*Navigating this repository*:
 
 project3/mazes directory:
 
