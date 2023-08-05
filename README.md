@@ -19,7 +19,8 @@ project3/project3_qt:
 
 project3/solved_mazes_ref:
 
-      * includes all pre-generated mazes solved using A* on the maze generator linked below. included to show that my application produces the correct shortest path
+      * includes all pre-generated mazes solved using A* on the maze generator linked below. 
+      * included to show that my application produces the correct shortest path
 
 
 MODULES/LIBRARIES NEEDED:
